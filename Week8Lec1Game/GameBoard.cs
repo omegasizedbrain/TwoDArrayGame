@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,8 +54,13 @@ namespace Week8Lec1Game
                             {
                                 Console.WriteLine("You Cannot Move as You Need to Heal");
                                 playableCharacter.hp++;
-                                Console.WriteLine("You healed 1 hp");
+                                Console.WriteLine("You healed 1 hp {0}/{1}", playableCharacter.hp, playableCharacter.getMaxHp());
                                 Console.ReadLine();
+                            }
+                            else if(playableCharacter.hp == 0)
+                            {
+                                Console.WriteLine("You Died");
+                                flag = 0;
                             }
                             else
                             {
@@ -99,7 +105,7 @@ namespace Week8Lec1Game
                         }
                     }
                 }
-                catch(Exception e)
+                catch
                 {
                     Console.WriteLine("Input must be an int");
                 }
@@ -219,9 +225,22 @@ namespace Week8Lec1Game
 
         public void placePlayers(Player[,] board, Random random, int players, int boardSize, string[] names)
         {
+            int x = 0;
+            int y = 0;
             for (int i = 0; i < players; i++)
             {
-                board[random.Next(boardSize), random.Next(boardSize)] = new Player(names[i]);
+                x = random.Next(boardSize);
+                y = random.Next(boardSize);
+                if (board[x, y].isReal())
+                {
+                    i--;
+                }
+                else
+                {
+                    board[random.Next(boardSize), random.Next(boardSize)] = new Player(names[i]);
+                }
+
+                
             }
         }
         public void movePlayers(Player[,] board, Random random)
