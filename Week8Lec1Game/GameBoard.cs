@@ -307,7 +307,7 @@ namespace Week8Lec1Game
 
             if (counter == 1 && winner != null)
             {
-                Console.WriteLine("{0} is won the tournament", winner.name);
+                Console.WriteLine("{0} has won the tournament", winner.name);
                 printBoard(board);
                 return 0;
             }
