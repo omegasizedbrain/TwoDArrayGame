@@ -257,7 +257,7 @@ namespace Week8Lec1Game
         public Player battle(Player p1, Player p2)
         {
             Random random = new Random();
-            Player winner;
+            Player winner = null;
             do
             {
                 if (random.NextDouble() > 0.5)
@@ -266,12 +266,15 @@ namespace Week8Lec1Game
                     Console.WriteLine("{0} has attacked {1} for {2} damage", p1.name, p2.name, 1 + p1.kills);
                     winner = battleOutcome(p2, p1);
                 }
-                else
+                else if (random.NextDouble() > 0.5)
                 {
                     p1.hp -= 1 + p2.kills;
                     Console.WriteLine("{0} has attacked {1} for {2} damage", p2.name, p1.name, 1 + p2.kills);
                     winner = battleOutcome(p1, p2);
-
+                }
+                else
+                {
+                    Console.WriteLine("Double Miss");
                 }
             } while (winner == null);
             return winner;
