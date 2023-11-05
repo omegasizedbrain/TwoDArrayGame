@@ -9,87 +9,97 @@ namespace Week8Lec1Game
 {
     internal class GameBoard
     {
-        private int playerCount;
         private int boardSize;
+        private Player[] players;
+        private Player playableCharacter = null;
+        private Player[,] board;
+        private int playable = 0;
         Random random = new Random();
         string[] names = { "B", "D", "J", "R", "S" };
 
-        public GameBoard(int playerCount, int BoardSize)
+        public GameBoard(int playerCount, int BoardSize, int playable)
         {
-            this.playerCount = playerCount;
+            players = new Player[playerCount];
             this.boardSize = BoardSize;
-        }
-        public void startGame(int playable)
-        {
-            
-            Player[,] board = new Player[boardSize, boardSize];
+            board = new Player[boardSize, boardSize];
+            this.playable = playable;
             fillBoard(board);
-            Player playableCharacter = new Player();
+
             if (playable == 1)
             {
-                playableCharacter = new Player("You");
-                playableCharacter.id = 2;
-                board[random.Next(boardSize), random.Next(boardSize)] = playableCharacter;
+                int x = random.Next(boardSize);
+                int y = random.Next(boardSize);
+                playableCharacter = new Player("You",6, x, y);
+                board[playableCharacter.x, playableCharacter.y] = playableCharacter;
             }
-  
-            placePlayers(board, random, playerCount, boardSize, names);
-            int flag = 1;
 
-            Console.WriteLine("Game Start!");
+            placePlayers(random, names);
+        }
+        public void startGame()
+        {
+            int flag = 1;
 
             while (flag != 0)
             {
                 Console.WriteLine();
                 try
                 {
-                    printBoard(board);
-                    
                     if (flag != 0)
                     {
-                        movePlayers(board, random);
-                        resetHasMoved(board);
+                        movePlayers(players, random);
+                        printBoard(board);
                         if (playable == 1)
                         {
-                            if (playableCharacter.hp < playableCharacter.getMaxHp())
+                            if (playableCharacter.isAlive)
                             {
-                                Console.WriteLine("You Cannot Move as You Need to Heal");
-                                playableCharacter.hp++;
-                                Console.WriteLine("You healed 1 hp {0}/{1}", playableCharacter.hp, playableCharacter.getMaxHp());
-                                Console.ReadLine();
-                            }
-                            else if(playableCharacter.hp == 0)
-                            {
-                                Console.WriteLine("You Died");
-                                flag = 0;
+                                if (playableCharacter.hp < playableCharacter.getMaxHp())
+                                {
+                                    Console.WriteLine("You Cannot Move as You Need to Heal");
+                                    playableCharacter.hp++;
+                                    Console.WriteLine("You healed 1 hp {0}/{1}", playableCharacter.hp - 1, playableCharacter.getMaxHp());
+                                    Console.ReadLine();
+                                }
+                                else if (playableCharacter.hp == 0)
+                                {
+                                    Console.WriteLine("You Died");
+                                    flag = 0;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("What direction would you like to move");
+                                    Console.WriteLine("1: UP");
+                                    Console.WriteLine("2: DOWN");
+                                    Console.WriteLine("3: LEFT");
+                                    Console.WriteLine("4: RIGHT");
+                                    Console.WriteLine("0: EXIT");
+
+                                    flag = int.Parse(Console.ReadLine());
+                                    switch (flag)
+                                    {
+                                        case 1:
+                                            moveUp(playableCharacter);
+                                            break;
+                                        case 2:
+                                            moveDown(playableCharacter);
+                                            break;
+                                        case 3:
+                                            moveLeft(playableCharacter);
+                                            break;
+                                        case 4:
+                                            moveRight(playableCharacter);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
                             }
                             else
                             {
-                                Console.WriteLine("What direction would you like to move");
-                                Console.WriteLine("1: UP");
-                                Console.WriteLine("2: DOWN");
-                                Console.WriteLine("3: LEFT");
-                                Console.WriteLine("4: RIGHT");
-                                Console.WriteLine("0: EXIT");
-
-                                flag = int.Parse(Console.ReadLine());
-                                switch (flag)
-                                {
-                                    case 1:
-                                        moveUp(board, playableCharacter);
-                                        break;
-                                    case 2:
-                                        moveDown(board, playableCharacter);
-                                        break;
-                                    case 3:
-                                        moveLeft(board, playableCharacter);
-                                        break;
-                                    case 4:
-                                        moveRight(board, playableCharacter);
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                Console.WriteLine("You lost");
+                                Console.ReadLine();
+                                break;
                             }
+                            
                             
                         }
                         else
@@ -98,11 +108,11 @@ namespace Week8Lec1Game
                             flag = int.Parse(Console.ReadLine());
                             
                         }
-
                         if(flag != 0)
                         {
                             flag = checkBoard(board);
                         }
+                        
                     }
                 }
                 catch
@@ -113,92 +123,128 @@ namespace Week8Lec1Game
             }
         }
 
-        public void moveDown(Player[,] board, Player player)
+        public void placePlayers(Random random, string[] names)
         {
-            int flag = 0;
-            for (int i = 0; i < board.GetLength(0); i++)
+            int x = 0;
+            int y = 0;
+            for (int i = 0; i < players.Length; i++)
             {
-                for (int j = 0; j < board.GetLength(1); j++)
+                x = random.Next(boardSize);
+                y = random.Next(boardSize);
+                if (board[x, y].isReal())
                 {
-                    if (board[i, j] == player && i != board.GetLength(0) - 1)
-                    {
-                        if (board[i + 1, j].isReal())
-                        {
-                            player = battle(player, board[i + 1, j]);
-                        }
-                        board[i + 1, j] = player;
-                        board[i, j] = new Player();
-                        Console.WriteLine("Player Moved Down");
-                        flag = 1;
-                    }
+                    i--;
+                    continue;
                 }
-                if (flag == 1)
+                else
                 {
-                    break;
+                    players[i] = new Player(names[i],i+1, x, y);
+                    board[x, y] = players[i];
                 }
-            }
-        }
 
-        public void moveUp(Player[,] board, Player player)
-        {
-            for (int i = 0; i < board.GetLength(0); i++)
-            {
-                for (int j = 0; j < board.GetLength(1); j++)
-                {
-                    if (board[i, j] == player && i != 0)
-                    {
-                        if (board[i - 1, j].isReal())
-                        {
-                            player = battle(player, board[i - 1, j]);
-                        }
-                        board[i - 1, j] = player;
-                        board[i, j] = new Player();
-                        Console.WriteLine("Player Moved Up");
-                        break;
-                    }
-                }
+
             }
         }
-        public void moveRight(Player[,] board, Player player)
+        public void movePlayers(Player[] players, Random random)
         {
-            for (int i = 0; i < board.GetLength(0); i++)
+            double generated;
+            for (int i = 0; i < players.Length; i++)
             {
-                for (int j = 0; j < board.GetLength(1); j++)
+                if (players[i].id != 6 && players[i].isAlive)
                 {
-                    if (board[i, j] == player && j != board.GetLength(1) - 1)
+                    if (players[i].hp < players[i].getMaxHp())
                     {
-                        if (board[i, j + 1].isReal())
+                        players[i].hp += 1;
+                        Console.WriteLine("Player {0} healed 1 hp", players[i].name);
+                    }
+                    else
+                    {
+                        generated = random.NextDouble();
+
+                        if (generated > 0.75)
                         {
-                            player = battle(player, board[i, j + 1]);
+                            moveUp(players[i]);
                         }
-                        board[i, j + 1] = player;
-                        board[i, j] = new Player();
-                        Console.WriteLine("Player Moved Right");
-                        break;
+                        else if (generated > 0.5)
+                        {
+                            moveLeft(players[i]);
+                        }
+                        else if (generated > 0.25)
+                        {
+                            moveDown(players[i]);
+                        }
+                        else
+                        {
+                            moveRight(players[i]);
+                        }
                     }
                 }
             }
         }
 
-        public void moveLeft(Player[,] board, Player player)
+        public void moveDown(Player player)
         {
-            for (int i = 0; i < board.GetLength(0); i++)
+            if (player.x != board.GetLength(0) - 1)
             {
-                for (int j = 0; j < board.GetLength(1); j++)
+                if (board[(player.x + 1), player.y].isReal())
                 {
-                    if (board[i, j] == player && j != 0)
-                    {
-                        if (board[i, j - 1].isReal())
-                        {
-                            player = battle(player, board[i, j - 1]);
-                        }
-                        board[i, j - 1] = player;
-
-                        board[i, j] = new Player();
-                        Console.WriteLine("Player Moved Left");
-                        break;
-                    }
+                    player = battle(player, board[player.x + 1, player.y]);
                 }
+                
+                board[player.x, player.y] = new Player();
+                board[player.x + 1, player.y] = player;
+                player.x += 1;
+                Console.WriteLine("Player Moved Down");
+            }
+        }
+        
+
+        public void moveUp(Player player)
+        {
+            if (player.x != 0)
+            {
+                if (board[(player.x - 1), player.y].isReal())
+                {
+                    player = battle(player, board[player.x - 1, player.y]);
+                }
+                
+                board[player.x, player.y] = new Player();
+                board[player.x - 1, player.y] = player;
+                player.x -= 1;
+
+                Console.WriteLine("Player Moved Up");
+            }
+
+        }
+        public void moveRight(Player player)
+        {
+            if (player.y != board.GetLength(1) - 1)
+            {
+                if (board[player.x, (player.y + 1)].isReal())
+                {
+                    player = battle(player, board[player.x, player.y + 1]);
+                }
+                
+                board[player.x, player.y] = new Player();
+                board[player.x, player.y + 1] = player;
+                player.y += 1;
+                Console.WriteLine("Player Moved Right");
+            }
+        }
+
+        public void moveLeft(Player player)
+        {
+            if (player.y != 0)
+            {
+                if (board[player.x, (player.y - 1)].isReal())
+                {
+                    player = battle(player, board[player.x, player.y - 1]);
+                }
+                
+                board[player.x, player.y] = new Player();
+                board[player.x, player.y - 1] = player;
+                player.y -= 1;
+                Console.WriteLine("Player Moved Left");
             }
         }
         public void printBoard(Player[,] board)
@@ -222,81 +268,6 @@ namespace Week8Lec1Game
                 }
             }
         }
-
-        public void placePlayers(Player[,] board, Random random, int players, int boardSize, string[] names)
-        {
-            int x = 0;
-            int y = 0;
-            for (int i = 0; i < players; i++)
-            {
-                x = random.Next(boardSize);
-                y = random.Next(boardSize);
-                if (board[x, y].isReal())
-                {
-                    i--;
-                }
-                else
-                {
-                    board[random.Next(boardSize), random.Next(boardSize)] = new Player(names[i]);
-                }
-
-                
-            }
-        }
-        public void movePlayers(Player[,] board, Random random)
-        {
-            double generated;
-            for (int i = 0; i < board.GetLength(0); i++)
-            {
-                for (int j = 0; j < board.GetLength(0); j++)
-                {
-                    if (board[i, j].isReal() && !board[i, j].hasMoved && board[i,j].id != 2)
-                    {
-                        board[i, j].hasMoved = true;
-                        if (board[i, j].hp < board[i, j].getMaxHp())
-                        {
-                            board[i, j].hp += 1;
-                            Console.WriteLine("Player {0} healed 1 hp", board[i, j].name);
-                        }
-                        else
-                        {
-                            generated = random.NextDouble();
-
-                            if (generated > 0.75)
-                            {
-                                moveUp(board, board[i, j]);
-                            }
-                            else if (generated > 0.5)
-                            {
-                                moveLeft(board, board[i, j]);
-                            }
-                            else if (generated > 0.25)
-                            {
-                                moveDown(board, board[i, j]);
-                            }
-                            else
-                            {
-                                moveRight(board, board[i, j]);
-                            }
-                        }
-
-
-                    }
-                }
-            }
-        }
-
-        public void resetHasMoved(Player[,] board)
-        {
-            for (int i = 0; i < board.GetLength(0); i++)
-            {
-                for (int j = 0; j < board.GetLength(0); j++)
-                {
-                    board[i, j].hasMoved = false;
-                }
-            }
-        }
-
         public Player battle(Player p1, Player p2)
         {
             Random random = new Random();
@@ -326,6 +297,7 @@ namespace Week8Lec1Game
         {
             if (p1.hp <= 0)
             {
+                p1.isAlive = false;
                 Console.WriteLine(p2.name + " has defeated " + p1.name);
                 p2.kills += 1 + p1.kills;
                 return p2;

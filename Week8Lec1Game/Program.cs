@@ -14,12 +14,14 @@ namespace Week8Lec2TwoDArrayGame
     {
         static void Main(string[] args)
         {
-            GameBoard board = new GameBoard(5, 10);
+            
             try
             {
                 Console.WriteLine("Main Menu\n1:Controlled Character\n2:Just Bots");
                 int playable = int.Parse(Console.ReadLine());
-                board.startGame(playable);
+                GameBoard board = new GameBoard(5, 10, playable);
+                Console.WriteLine("Game Start!");
+                board.startGame();
             }
             catch
             {
