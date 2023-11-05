@@ -10,11 +10,12 @@ namespace Week8Lec1Game
 {
     internal class GameBoard
     {
-        private int boardSize;
+        public int boardSize { get; set; }
         public Player[] players { get; }
-        public Player playableCharacter {get;}
-        public Player[,] board { get; }
+        public Player playableCharacter { get; set; }
+        public Player[,] board { get; set; }
         private int playable = 0;
+        private int shrinkBoard = 0;
         Random random = new Random();
         string[] names = { "B", "D", "J", "R", "S" };
 
@@ -31,16 +32,16 @@ namespace Week8Lec1Game
                 int x = random.Next(boardSize);
                 int y = random.Next(boardSize);
                 playableCharacter = new Player("You",6, x, y);
-                board[playableCharacter.x, playableCharacter.y] = playableCharacter;
             }
             else
             {
                 playableCharacter = null;
             }
 
-            placePlayers(names);
+            setPlayers(names);
+            placePlayers();
         }
-        public void placePlayers(string[] names)
+        public void setPlayers(string[] names)
         {
             int x = 0;
             int y = 0;
@@ -56,10 +57,23 @@ namespace Week8Lec1Game
                 else
                 {
                     players[i] = new Player(names[i],i+1, x, y);
-                    board[x, y] = players[i];
                 }
 
 
+            }
+        }
+        public void placePlayers()
+        {
+            foreach(Player player in players)
+            {
+                if (player.isAlive)
+                {
+                    board[player.x, player.y] = player;
+                }
+                if (playable == 1)
+                {
+                    board[playableCharacter.x, playableCharacter.y] = playableCharacter;
+                }
             }
         }
         public BattleReport movePlayers(Player[] players)
@@ -127,7 +141,7 @@ namespace Week8Lec1Game
                 {
                     player = battle(player, board[player.x - 1, player.y], report);
                 }
-                
+
                 board[player.x, player.y] = new Player();
                 board[player.x - 1, player.y] = player;
                 player.x -= 1;
@@ -161,7 +175,6 @@ namespace Week8Lec1Game
                 {
                     player = battle(player, board[player.x, player.y - 1], report);
                 }
-                
                 board[player.x, player.y] = new Player();
                 board[player.x, player.y - 1] = player;
                 player.y -= 1;
@@ -254,6 +267,63 @@ namespace Week8Lec1Game
             {
                 return null;
             }
+        }
+        public void shrink(BattleReport report)
+        {
+            for(int i = 0; i < players.Length; i++)
+            {
+                if (players[i].x == boardSize - 1)
+                {
+                    if (board[(players[i].x - 1), players[i].y].isReal())
+                    {
+                        players[i] = battle(players[i], board[players[i].x - 1, players[i].y], report);
+                    }
+
+                    board[players[i].x, players[i].y] = new Player();
+                    board[players[i].x - 1, players[i].y] = players[i];
+                    players[i].x -= 1;
+                }
+                if (players[i].y == boardSize- 1)
+                {
+                    if (board[players[i].x, (players[i].y - 1)].isReal())
+                    {
+                        players[i] = battle(players[i], board[players[i].x, players[i].y - 1], report);
+                    }
+                    board[players[i].x, players[i].y] = new Player();
+                    board[players[i].x, players[i].y - 1] = players[i];
+                    players[i].y -= 1;
+                }
+            }
+            if(playable == 1)
+            {
+                if (playableCharacter.x == boardSize - 1)
+                {
+                    if (board[(playableCharacter.x - 1), playableCharacter.y].isReal())
+                    {
+                        playableCharacter = battle(playableCharacter, board[playableCharacter.x - 1, playableCharacter.y], report);
+                    }
+
+                    board[playableCharacter.x, playableCharacter.y] = new Player();
+                    board[playableCharacter.x - 1, playableCharacter.y] = playableCharacter;
+                    playableCharacter.x -= 1;
+                }
+                if (playableCharacter.y == boardSize - 1)
+                {
+                    if (board[playableCharacter.x, (playableCharacter.y - 1)].isReal())
+                    {
+                        playableCharacter = battle(playableCharacter, board[playableCharacter.x, playableCharacter.y - 1], report);
+                    }
+                    board[playableCharacter.x, playableCharacter.y] = new Player();
+                    board[playableCharacter.x, playableCharacter.y - 1] = playableCharacter;
+                    playableCharacter.y -= 1;
+                }
+            }
+            board = new Player[boardSize - 1, boardSize - 1];
+            fillBoard(board);
+            placePlayers();
+            boardSize--;
+
+            report.battleText += "The board size has shrunk\n";
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,28 +22,39 @@ namespace Week8Lec2TwoDArrayGame
                 int input = 0;
                 int playable = 0;
                 int shrinkBoard = 0;
-                Console.WriteLine("Main Menu\n1:Start Game\n2:Add Playable Character\n3:Add Shrinking Board");
+                Console.WriteLine("Main Menu\n1:Start Game\n2:Add Playable Character\n3:Add Shrinking Board\n4:Exit");
                 do
                 {
                     input = int.Parse(Console.ReadLine());
-                    if (input == 2)
+                    if (input == 1)
+                    {
+                        break;
+                    }
+                    else if (input == 2)
                     {
                         playable = 1;
-                    }else if(input == 3)
+                        Console.WriteLine("Playable Character Enabled");
+                    }
+                    else if(input == 3)
                     {
                         shrinkBoard = 1;
+                        Console.WriteLine("Shrinking Board Enabled");
+                    }else if(input == 4)
+                    {
+                        System.Environment.Exit(0);
                     }
                     else
                     {
                         Console.WriteLine("Thats not an option");
                     }
-                }while (input != 1) ;
+                    
+                } while (true) ;
                 
                 
                 GameBoard game = new GameBoard(5, 10, playable);
                 Console.WriteLine("Game Start!");
                 int flag = 1;
-                BattleReport report;
+                BattleReport report = new BattleReport();
 
                 while (flag != 0)
                 {
@@ -50,10 +62,10 @@ namespace Week8Lec2TwoDArrayGame
                     try
                     {
                         if (flag != 0)
-                        {
-                            report = new BattleReport();
-                            report = game.movePlayers(game.players);
+                        {  
+                            report.battleText += game.movePlayers(game.players).battleText;
                             Console.WriteLine(report.battleText);
+                            report = new BattleReport();
                             game.printBoard(game.board);
                             if (playable == 1)
                             {
@@ -118,7 +130,10 @@ namespace Week8Lec2TwoDArrayGame
                                     Console.WriteLine("{0} has won the tournament", winner.name);
                                 }
                             }
-
+                            if(shrinkBoard == 1 && game.boardSize != 2)
+                            {
+                                game.shrink(report);
+                            }                            
                         }
                     }
                     catch
