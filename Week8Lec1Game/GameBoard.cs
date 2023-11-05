@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,9 +11,9 @@ namespace Week8Lec1Game
     internal class GameBoard
     {
         private int boardSize;
-        private Player[] players;
-        private Player playableCharacter = null;
-        private Player[,] board;
+        public Player[] players { get; }
+        public Player playableCharacter {get;}
+        public Player[,] board { get; }
         private int playable = 0;
         Random random = new Random();
         string[] names = { "B", "D", "J", "R", "S" };
@@ -32,98 +33,14 @@ namespace Week8Lec1Game
                 playableCharacter = new Player("You",6, x, y);
                 board[playableCharacter.x, playableCharacter.y] = playableCharacter;
             }
-
-            placePlayers(random, names);
-        }
-        public void startGame()
-        {
-            int flag = 1;
-
-            while (flag != 0)
+            else
             {
-                Console.WriteLine();
-                try
-                {
-                    if (flag != 0)
-                    {
-                        movePlayers(players, random);
-                        printBoard(board);
-                        if (playable == 1)
-                        {
-                            if (playableCharacter.isAlive)
-                            {
-                                if (playableCharacter.hp < playableCharacter.getMaxHp())
-                                {
-                                    Console.WriteLine("You Cannot Move as You Need to Heal");
-                                    playableCharacter.hp++;
-                                    Console.WriteLine("You healed 1 hp {0}/{1}", playableCharacter.hp - 1, playableCharacter.getMaxHp());
-                                    Console.ReadLine();
-                                }
-                                else if (playableCharacter.hp == 0)
-                                {
-                                    Console.WriteLine("You Died");
-                                    flag = 0;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("What direction would you like to move");
-                                    Console.WriteLine("1: UP");
-                                    Console.WriteLine("2: DOWN");
-                                    Console.WriteLine("3: LEFT");
-                                    Console.WriteLine("4: RIGHT");
-                                    Console.WriteLine("0: EXIT");
-
-                                    flag = int.Parse(Console.ReadLine());
-                                    switch (flag)
-                                    {
-                                        case 1:
-                                            moveUp(playableCharacter);
-                                            break;
-                                        case 2:
-                                            moveDown(playableCharacter);
-                                            break;
-                                        case 3:
-                                            moveLeft(playableCharacter);
-                                            break;
-                                        case 4:
-                                            moveRight(playableCharacter);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("You lost");
-                                Console.ReadLine();
-                                break;
-                            }
-                            
-                            
-                        }
-                        else
-                        {
-                            Console.WriteLine("Move Players? (0 to Exit)");
-                            flag = int.Parse(Console.ReadLine());
-                            
-                        }
-                        if(flag != 0)
-                        {
-                            flag = checkBoard(board);
-                        }
-                        
-                    }
-                }
-                catch
-                {
-                    Console.WriteLine("Input must be an int");
-                }
-
+                playableCharacter = null;
             }
-        }
 
-        public void placePlayers(Random random, string[] names)
+            placePlayers(names);
+        }
+        public void placePlayers(string[] names)
         {
             int x = 0;
             int y = 0;
@@ -145,9 +62,10 @@ namespace Week8Lec1Game
 
             }
         }
-        public void movePlayers(Player[] players, Random random)
+        public BattleReport movePlayers(Player[] players)
         {
             double generated;
+            BattleReport report = new BattleReport();
             for (int i = 0; i < players.Length; i++)
             {
                 if (players[i].id != 6 && players[i].isAlive)
@@ -155,7 +73,7 @@ namespace Week8Lec1Game
                     if (players[i].hp < players[i].getMaxHp())
                     {
                         players[i].hp += 1;
-                        Console.WriteLine("Player {0} healed 1 hp", players[i].name);
+                        report.battleText += "Player " + players[i].name + " healed 1 hp\n";
                     }
                     else
                     {
@@ -163,88 +81,91 @@ namespace Week8Lec1Game
 
                         if (generated > 0.75)
                         {
-                            moveUp(players[i]);
+                            moveUp(players[i], report);
                         }
                         else if (generated > 0.5)
                         {
-                            moveLeft(players[i]);
+                            moveLeft(players[i], report);
                         }
                         else if (generated > 0.25)
                         {
-                            moveDown(players[i]);
+                            moveDown(players[i], report);
                         }
                         else
                         {
-                            moveRight(players[i]);
+                            moveRight(players[i], report);
                         }
                     }
                 }
             }
+            return report;
         }
 
-        public void moveDown(Player player)
+        public void moveDown(Player player, BattleReport report)
         {
             if (player.x != board.GetLength(0) - 1)
             {
                 if (board[(player.x + 1), player.y].isReal())
                 {
-                    player = battle(player, board[player.x + 1, player.y]);
+                    player = battle(player, board[player.x + 1, player.y], report);
                 }
-                
+
                 board[player.x, player.y] = new Player();
                 board[player.x + 1, player.y] = player;
                 player.x += 1;
-                Console.WriteLine("Player Moved Down");
+                report.battleText += "Player Moved Down\n";
             }
+                
         }
         
 
-        public void moveUp(Player player)
+        public void moveUp(Player player, BattleReport report)
         {
             if (player.x != 0)
             {
                 if (board[(player.x - 1), player.y].isReal())
                 {
-                    player = battle(player, board[player.x - 1, player.y]);
+                    player = battle(player, board[player.x - 1, player.y], report);
                 }
                 
                 board[player.x, player.y] = new Player();
                 board[player.x - 1, player.y] = player;
                 player.x -= 1;
 
-                Console.WriteLine("Player Moved Up");
+                report.battleText += "Player Moved Up\n";
             }
 
         }
-        public void moveRight(Player player)
+        public void moveRight(Player player, BattleReport report)
         {
             if (player.y != board.GetLength(1) - 1)
             {
                 if (board[player.x, (player.y + 1)].isReal())
                 {
-                    player = battle(player, board[player.x, player.y + 1]);
+                    player = battle(player, board[player.x, player.y + 1], report);
                 }
-                
+
                 board[player.x, player.y] = new Player();
                 board[player.x, player.y + 1] = player;
                 player.y += 1;
-                Console.WriteLine("Player Moved Right");
+                report.battleText += "Player Moved Right\n";
             }
+
         }
 
-        public void moveLeft(Player player)
+        public void moveLeft(Player player, BattleReport report)
         {
             if (player.y != 0)
             {
                 if (board[player.x, (player.y - 1)].isReal())
                 {
-                    player = battle(player, board[player.x, player.y - 1]);
+                    player = battle(player, board[player.x, player.y - 1], report);
                 }
                 
                 board[player.x, player.y] = new Player();
                 board[player.x, player.y - 1] = player;
                 player.y -= 1;
-                Console.WriteLine("Player Moved Left");
+                report.battleText += "Player Moved Left\n";
             }
         }
         public void printBoard(Player[,] board)
@@ -268,7 +189,7 @@ namespace Week8Lec1Game
                 }
             }
         }
-        public Player battle(Player p1, Player p2)
+        public Player battle(Player p1, Player p2, BattleReport report)
         {
             Random random = new Random();
             Player winner = null;
@@ -277,28 +198,28 @@ namespace Week8Lec1Game
                 if (random.NextDouble() > 0.5)
                 {
                     p2.hp -= 1 + p1.kills;
-                    Console.WriteLine("{0} has attacked {1} for {2} damage", p1.name, p2.name, 1 + p1.kills);
-                    winner = battleOutcome(p2, p1);
+                    report.battleText += p1.name + " has attacked " + p2.name + " for " + (1 + p1.kills) + " damage\n";
+                    winner = battleOutcome(p2, p1, report);
                 }
                 else if (random.NextDouble() > 0.5)
                 {
                     p1.hp -= 1 + p2.kills;
-                    Console.WriteLine("{0} has attacked {1} for {2} damage", p2.name, p1.name, 1 + p2.kills);
-                    winner = battleOutcome(p1, p2);
+                    report.battleText += p2.name + " has attacked " + p1.name + " for " + (1 + p2.kills) + " damage\n";
+                    winner = battleOutcome(p1, p2, report);
                 }
                 else
                 {
-                    Console.WriteLine("Double Miss");
+                    report.battleText += "Double Miss\n";
                 }
             } while (winner == null);
             return winner;
         }
-        public Player battleOutcome(Player p1, Player p2)
+        public Player battleOutcome(Player p1, Player p2, BattleReport report)
         {
             if (p1.hp <= 0)
             {
                 p1.isAlive = false;
-                Console.WriteLine(p2.name + " has defeated " + p1.name);
+                report.battleText += p2.name + " has defeated " + p1.name + "\n";
                 p2.kills += 1 + p1.kills;
                 return p2;
             }
@@ -307,7 +228,7 @@ namespace Week8Lec1Game
                 return null;
             }
         }
-        public int checkBoard(Player[,] board)
+        public Player checkBoard(Player[,] board)
         {
             int counter = 0;
             Player winner = new Player();
@@ -325,15 +246,15 @@ namespace Week8Lec1Game
 
             if (counter == 1 && winner != null)
             {
-                Console.WriteLine("{0} has won the tournament", winner.name);
                 printBoard(board);
                 Console.ReadLine();
-                return 0;
+                return winner;
             }
             else
             {
-                return 1;
+                return null;
             }
         }
     }
 }
+
