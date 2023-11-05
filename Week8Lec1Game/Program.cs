@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Security.Permissions;
 using System.Text;
@@ -17,8 +18,27 @@ namespace Week8Lec2TwoDArrayGame
             
             try
             {
-                Console.WriteLine("Main Menu\n1:Controlled Character\n2:Just Bots");
-                int playable = int.Parse(Console.ReadLine());
+                int input = 0;
+                int playable = 0;
+                int shrinkBoard = 0;
+                Console.WriteLine("Main Menu\n1:Start Game\n2:Add Playable Character\n3:Add Shrinking Board");
+                do
+                {
+                    input = int.Parse(Console.ReadLine());
+                    if (input == 2)
+                    {
+                        playable = 1;
+                    }else if(input == 3)
+                    {
+                        shrinkBoard = 1;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Thats not an option");
+                    }
+                }while (input != 1) ;
+                
+                
                 GameBoard game = new GameBoard(5, 10, playable);
                 Console.WriteLine("Game Start!");
                 int flag = 1;
