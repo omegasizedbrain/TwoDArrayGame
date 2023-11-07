@@ -19,13 +19,14 @@ namespace Week8Lec1Game
         Random random = new Random();
         string[] names = { "B", "D", "J", "R", "S" };
 
-        public GameBoard(int playerCount, int BoardSize, int playable)
+        public GameBoard(int playerCount, int BoardSize, int playable, int shrinkBoard)
         {
             players = new Player[playerCount];
             this.boardSize = BoardSize;
             board = new Player[boardSize, boardSize];
             this.playable = playable;
             fillBoard(board);
+            this.shrinkBoard = shrinkBoard;
 
             if (playable == 1)
             {
@@ -234,6 +235,10 @@ namespace Week8Lec1Game
                 p1.isAlive = false;
                 report.battleText += p2.name + " has defeated " + p1.name + "\n";
                 p2.kills += 1 + p1.kills;
+                if(shrinkBoard == 1 && boardSize != 2)
+                {
+                    shrink(report);
+                }
                 return p2;
             }
             else

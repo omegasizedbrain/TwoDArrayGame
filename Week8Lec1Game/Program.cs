@@ -51,7 +51,7 @@ namespace Week8Lec2TwoDArrayGame
                 } while (true) ;
                 
                 
-                GameBoard game = new GameBoard(5, 10, playable);
+                GameBoard game = new GameBoard(5, 10, playable, shrinkBoard);
                 Console.WriteLine("Game Start!");
                 int flag = 1;
                 BattleReport report = new BattleReport();
@@ -129,11 +129,7 @@ namespace Week8Lec2TwoDArrayGame
                                 {
                                     Console.WriteLine("{0} has won the tournament", winner.name);
                                 }
-                            }
-                            if(shrinkBoard == 1 && game.boardSize != 2)
-                            {
-                                game.shrink(report);
-                            }                            
+                            }                          
                         }
                     }
                     catch
